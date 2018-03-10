@@ -1,6 +1,5 @@
 package io.github.codebandits.beak
 
-import arrow.core.getOrElse
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.jetbrains.exposed.sql.insert
@@ -8,7 +7,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.fail
 
 open class DataAccessTest {
 
@@ -23,7 +21,7 @@ open class DataAccessTest {
             create(FeatherTable)
             FeatherTable.insert {}
 
-            assertEquals(1, FeatherEntity.allOrError().getOrElse { fail() }.count())
+            assertEquals(1, FeatherEntity.allOrError().assertRight().count())
         }
     }
 }
