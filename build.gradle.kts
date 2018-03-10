@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath("org.junit.platform:junit-platform-gradle-plugin:1.1.0")
@@ -10,6 +10,7 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenCentral()
+        jcenter()
+        maven { setUrl("https://dl.bintray.com/kotlin/exposed") }
     }
 }
