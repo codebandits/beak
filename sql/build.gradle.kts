@@ -5,6 +5,7 @@ apply {
 
 dependencies {
     "compile"("io.arrow-kt:arrow-core:0.6.1")
+    "compile"("io.arrow-kt:arrow-data:0.6.1")
     "compile"("org.jetbrains.exposed:exposed:0.10.1")
 
     "testCompile"("org.junit.jupiter:junit-jupiter-api:5.1.0")
