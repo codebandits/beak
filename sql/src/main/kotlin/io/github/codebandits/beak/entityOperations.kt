@@ -15,3 +15,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.allOrError(): Eithe
             }
         }
 }
+
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.newOrError(init: T.() -> Unit): Either<DataAccessError, T> {
+    return Try { new(init) }.toEither().mapLeft { throw UnexpectedException(it) }
+}

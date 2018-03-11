@@ -63,4 +63,26 @@ class DataAccessTest {
 
         assertEquals(DataAccessError.SystemError.TransactionError::class, actualError::class)
     }
+
+    @Test
+    fun `newOrError should create a record in the database`() {
+        transaction {
+            FeatherEntity.newOrError {}.assertRight()
+        }
+
+        transaction {
+            assertEquals(1, FeatherEntity.allOrError().assertRight().count())
+        }
+    }
+
+    @Test
+    fun `newOrError should save the data into a record in the database`() {
+        transaction {
+            val feather = FeatherEntity.newOrError {
+                type = "contour"
+            }.assertRight()
+
+            assertEquals("contour", feather.type)
+        }
+    }
 }
