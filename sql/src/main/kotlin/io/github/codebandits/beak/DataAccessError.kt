@@ -5,5 +5,6 @@ sealed class DataAccessError {
 
     sealed class SystemError : DataAccessError() {
         data class ConnectionError(override val cause: Throwable) : SystemError()
+        data class TransactionError(override val cause: Throwable) : SystemError()
     }
 }

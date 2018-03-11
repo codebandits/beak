@@ -56,4 +56,11 @@ class DataAccessTest {
             assertEquals(DataAccessError.SystemError.ConnectionError::class, actualError::class)
         }
     }
+
+    @Test
+    fun `allOrError should return a failure when there is no transaction`() {
+        val actualError: DataAccessError = FeatherEntity.allOrError().assertLeft()
+
+        assertEquals(DataAccessError.SystemError.TransactionError::class, actualError::class)
+    }
 }

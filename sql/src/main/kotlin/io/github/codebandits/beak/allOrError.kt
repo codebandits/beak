@@ -9,8 +9,9 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.allOrError(): Eithe
     return Try { all().toList() }.toEither()
         .mapLeft {
             when {
-                it.cause is java.net.ConnectException -> DataAccessError.SystemError.ConnectionError(it)
-                else                                  -> unhandled(it)
+                it.cause is java.net.ConnectException      -> DataAccessError.SystemError.ConnectionError(it)
+                it.message == "No transaction in context." -> DataAccessError.SystemError.TransactionError(it)
+                else                                       -> unhandled(it)
             }
         }
 }
