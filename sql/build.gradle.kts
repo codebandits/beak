@@ -10,6 +10,7 @@ dependencies {
     val arrowVersion: String by extra
     val exposedVersion: String by extra
     val junitVersion: String by extra
+    val slf4jSimpleVersion: String by extra
 
     "compile"(kotlin(module = "stdlib", version = kotlinVersion))
     "compile"("io.arrow-kt:arrow-core:$arrowVersion")
@@ -20,4 +21,5 @@ dependencies {
     "testRuntime"("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     "testCompile"(kotlin(module = "test-junit", version = kotlinVersion))
     "testCompile"("com.h2database:h2:$h2Version")
+    "testRuntime"("org.slf4j:slf4j-simple:$slf4jSimpleVersion")
 }
