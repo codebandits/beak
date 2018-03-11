@@ -85,4 +85,22 @@ class DataAccessTest {
             assertEquals("contour", feather.type)
         }
     }
+
+    @Test
+    fun `newOrError should return a failure when the database cannot connect`() {
+        server.stop()
+
+        transaction {
+            val actualError: DataAccessError = FeatherEntity.newOrError {}.assertLeft()
+
+            assertEquals(DataAccessError.SystemError.ConnectionError::class, actualError::class)
+        }
+    }
+
+    @Test
+    fun `newOrError should return a failure when there is no transaction`() {
+        val actualError: DataAccessError = FeatherEntity.newOrError {}.assertLeft()
+
+        assertEquals(DataAccessError.SystemError.TransactionError::class, actualError::class)
+    }
 }
