@@ -10,7 +10,7 @@ buildscript {
 
     dependencies {
         classpath("org.junit.platform:junit-platform-gradle-plugin:$junitPluginVersion")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath(kotlin(module = "gradle-plugin", version = kotlinVersion))
     }
 }
 
