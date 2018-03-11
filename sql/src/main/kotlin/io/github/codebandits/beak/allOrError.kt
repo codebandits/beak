@@ -11,10 +11,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.allOrError(): Eithe
             when {
                 it.cause is java.net.ConnectException      -> DataAccessError.SystemError.ConnectionError(it)
                 it.message == "No transaction in context." -> DataAccessError.SystemError.TransactionError(it)
-                else                                       -> unhandled(it)
+                else                                       -> throw UnexpectedException(it)
             }
         }
 }
-
-private fun unhandled(throwable: Throwable): Nothing =
-    throw Throwable("this exception is not handled by beak", throwable)
