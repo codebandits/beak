@@ -13,12 +13,11 @@ import kotlin.test.assertEquals
 class DataAccessTest {
 
     private lateinit var server: Server
-    private lateinit var database: Database
 
     @BeforeEach
     fun setUp() {
         server = Server.createTcpServer().start()
-        database = Database.connect(
+        Database.connect(
             url = "jdbc:h2:${server.url}/mem:test;DB_CLOSE_DELAY=-1",
             driver = "org.h2.Driver"
         )
@@ -31,7 +30,7 @@ class DataAccessTest {
     @AfterEach
     fun tearDown() {
         if (!server.isRunning(false)) server.start()
-        database.connector().createStatement().execute("DROP ALL OBJECTS;")
+        transaction { exec("DROP ALL OBJECTS;") }
         server.stop()
     }
 
