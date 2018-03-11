@@ -4,14 +4,12 @@ buildscript {
     project.apply { from("gradle/scripts/versions.gradle.kts") }
 
     val kotlinVersion: String by extra
-    val junitPluginVersion: String by extra
 
     repositories {
         jcenter()
     }
 
     dependencies {
-        classpath("org.junit.platform:junit-platform-gradle-plugin:$junitPluginVersion")
         classpath(kotlin(module = "gradle-plugin", version = kotlinVersion))
     }
 }
@@ -28,6 +26,14 @@ allprojects {
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             this.jvmTarget = jvmTarget
+        }
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+
+        testLogging {
+            events("passed", "skipped", "failed")
         }
     }
 }
