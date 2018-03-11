@@ -1,7 +1,6 @@
 apply {
     plugin("org.jetbrains.kotlin.jvm")
     plugin("org.junit.platform.gradle.plugin")
-    from("../gradle/scripts/versions.gradle.kts")
 }
 
 dependencies {
