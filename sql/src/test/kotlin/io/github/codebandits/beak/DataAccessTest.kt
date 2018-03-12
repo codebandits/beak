@@ -1,38 +1,11 @@
 package io.github.codebandits.beak
 
-import org.h2.tools.Server
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class DataAccessTest {
-
-    private lateinit var server: Server
-
-    @BeforeEach
-    fun setUp() {
-        server = Server.createTcpServer().start()
-        Database.connect(
-            url = "jdbc:h2:${server.url}/mem:test;DB_CLOSE_DELAY=-1",
-            driver = "org.h2.Driver"
-        )
-
-        transaction {
-            create(FeatherTable)
-        }
-    }
-
-    @AfterEach
-    fun tearDown() {
-        if (!server.isRunning(false)) server.start()
-        transaction { exec("DROP ALL OBJECTS;") }
-        server.stop()
-    }
+class DataAccessTest: TestWithDatabase() {
 
     @Test
     fun `allOrError should return a record for each item in the database`() {
