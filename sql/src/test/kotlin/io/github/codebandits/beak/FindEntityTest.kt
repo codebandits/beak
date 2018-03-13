@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class FindEntityTest: TestWithDatabase() {
+class FindEntityTest : TestWithDatabase() {
 
     @Test
     fun `should retrieve an entity from the database`() {
@@ -17,8 +17,9 @@ class FindEntityTest: TestWithDatabase() {
 
             val id: EntityID<Long> = expectedEntity.id
             assertEquals(
-                    Either.right(expectedEntity).assertRight(),
-                    FeatherEntity.findByIdOrError(id.value).assertRight())
+                Either.right(expectedEntity).assertRight(),
+                FeatherEntity.findByIdOrError(id.value).assertRight()
+            )
         }
     }
 
