@@ -17,8 +17,7 @@ dependencies {
 }
 
 publishing {
-    publications.create<MavenPublication>(rootProject.name) {
-        artifactId = rootProject.name
+    publications.create<MavenPublication>(name) {
         from(components["java"])
     }
 }
