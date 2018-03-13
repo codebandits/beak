@@ -15,8 +15,15 @@ buildscript {
 }
 
 allprojects {
-    apply { from("${rootProject.projectDir}/gradle/scripts/versions.gradle.kts") }
+    apply {
+        from("${rootProject.projectDir}/gradle/scripts/versions.gradle.kts")
+        plugin("org.jetbrains.kotlin.jvm")
+        plugin("maven-publish")
+    }
+
     val jvmTarget: String by extra
+
+    group = "io.github.codebandits"
 
     repositories {
         jcenter()
