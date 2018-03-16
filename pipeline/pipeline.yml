@@ -1,0 +1,21 @@
+---
+jobs:
+- name: beak
+  serial: true
+  plan:
+  - get: beak-source
+    trigger: true
+  - task: get version numbers
+    file: beak-source/pipeline/tasks/get-version-numbers.yml
+  - task: test / build / publish
+    file: beak-source/pipeline/tasks/test-build-publish.yml
+    params:
+      BINTRAY_USER: ((bintray-user))
+      BINTRAY_API_KEY: ((bintray-api-key))
+
+resources:
+- name: beak-source
+  type: git
+  source:
+    uri: https://github.com/codebandits/beak.git
+    branch: master
