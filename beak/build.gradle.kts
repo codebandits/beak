@@ -1,3 +1,5 @@
+import com.jfrog.bintray.gradle.BintrayExtension.PackageConfig
+
 dependencies {
     val kotlinVersion: String by extra
     val h2Version: String by extra
@@ -20,4 +22,20 @@ publishing {
     publications.create<MavenPublication>(name) {
         from(components["java"])
     }
+}
+
+bintray {
+    user = property("bintrayUser") as String
+    key = property("bintrayKey") as String
+    publish = true
+
+    setPublications(name)
+
+    // https://github.com/bintray/gradle-bintray-plugin/issues/193
+    // https://github.com/bintray/gradle-bintray-plugin/pull/194
+    pkg(closureOf<PackageConfig>{
+        userOrg = "codebandits"
+        repo = "beak"
+        name = project.name
+    })
 }
