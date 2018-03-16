@@ -1,0 +1,19 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: ubuntu
+    version: latest
+outputs:
+- name: versions
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    apt-get update && apt-get install -y curl jq
+    curl -sO https://raw.githubusercontent.com/fsaintjacques/semver-tool/master/src/semver
+    chmod +x semver
+    curl -s https://api.bintray.com/packages/codebandits/beak/beak/versions/_latest | jq -r ".name" > versions/current
+    ./semver bump patch $(cat versions/current) > versions/next

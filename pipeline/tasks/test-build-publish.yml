@@ -1,0 +1,25 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: openjdk
+    version: 9-jdk
+inputs:
+- name: beak-source
+- name: versions
+params:
+  BINTRAY_USER:
+  BINTRAY_API_KEY:
+run:
+  dir: beak-source
+  path: sh
+  args:
+  - -exc
+  - |
+    NEXT_VERSION=$(cat ../versions/next)
+    ./gradlew beak:test
+    ./gradlew beak:publishBeakPublicationToReleaseRepository \
+        -Pversion=$NEXT_VERSION \
+        -PbintrayUser=$BINTRAY_USER \
+        -PbintrayKey=$BINTRAY_API_KEY

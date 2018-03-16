@@ -4,4 +4,4 @@ out/
 .DS_Store
 .idea/
 *.iml
-
+pipeline/secrets.yml
