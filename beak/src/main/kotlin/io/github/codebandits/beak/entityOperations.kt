@@ -25,6 +25,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
 
 private fun <T> Try<T>.mapFailureToDataAccessError(): Either<DataAccessError, T> = toEither().mapLeft {
     when {
+        it is java.sql.SQLException                -> DataAccessError.SystemError.ConnectionError(it)
         it.cause is java.net.ConnectException      -> DataAccessError.SystemError.ConnectionError(it)
         it.message == "No transaction in context." -> DataAccessError.SystemError.TransactionError(it)
         else                                       -> throw UnexpectedException(it)
