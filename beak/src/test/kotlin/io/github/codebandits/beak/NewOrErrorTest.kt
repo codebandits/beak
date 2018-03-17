@@ -4,7 +4,15 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class NewOrErrorTest : TestWithDatabase() {
+class NewOrErrorH2Test : NewOrErrorTest() {
+    override val databaseConfiguration = h2Configuration()
+}
+
+class NewOrErrorMysqlTest : NewOrErrorTest() {
+    override val databaseConfiguration = mysqlConfiguration()
+}
+
+abstract class NewOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should create a record in the database`() {
@@ -30,7 +38,7 @@ class NewOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should return a failure when the database cannot connect`() {
-        server.stop()
+        databaseConfiguration.interruptDatabase()
 
         transaction {
             val actualError: DataAccessError = FeatherEntity.newOrError {}.assertLeft()

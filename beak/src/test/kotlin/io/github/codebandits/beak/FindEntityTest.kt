@@ -6,7 +6,15 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class FindEntityTest : TestWithDatabase() {
+class FindEntityH2Test : FindEntityTest() {
+    override val databaseConfiguration = h2Configuration()
+}
+
+class FindEntityMysqlTest : FindEntityTest() {
+    override val databaseConfiguration = mysqlConfiguration()
+}
+
+abstract class FindEntityTest : TestWithDatabase() {
 
     @Test
     fun `should retrieve an entity from the database`() {
@@ -24,8 +32,8 @@ class FindEntityTest : TestWithDatabase() {
     }
 
     @Test
-    fun `should retrieve a system error when server is down`() {
-        server.stop()
+    fun `should return a failure when the database cannot connect`() {
+        databaseConfiguration.interruptDatabase()
 
         transaction {
             val actualError: DataAccessError = FeatherEntity.findByIdOrError(0L).assertLeft()

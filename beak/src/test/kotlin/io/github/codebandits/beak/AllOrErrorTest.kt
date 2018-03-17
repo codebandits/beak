@@ -5,7 +5,15 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class AllOrErrorTest : TestWithDatabase() {
+class AllOrErrorH2Test : AllOrErrorTest() {
+    override val databaseConfiguration = h2Configuration()
+}
+
+class AllOrErrorMysqlTest : AllOrErrorTest() {
+    override val databaseConfiguration = mysqlConfiguration()
+}
+
+abstract class AllOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should return a record for each item in the database`() {
@@ -20,7 +28,7 @@ class AllOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should return a failure when the database cannot connect`() {
-        server.stop()
+        databaseConfiguration.interruptDatabase()
 
         transaction {
             val actualError: DataAccessError = FeatherEntity.allOrError().assertLeft()
