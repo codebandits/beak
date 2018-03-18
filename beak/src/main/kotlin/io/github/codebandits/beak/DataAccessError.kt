@@ -8,7 +8,7 @@ sealed class DataAccessError {
         data class TransactionError(override val cause: Throwable) : SystemError()
     }
 
-    sealed class EntityError: DataAccessError() {
-        data class NotFoundError(override val cause: Throwable): EntityError()
+    sealed class QueryError : DataAccessError() {
+        data class NotFoundError(override val cause: Throwable) : QueryError()
     }
 }
