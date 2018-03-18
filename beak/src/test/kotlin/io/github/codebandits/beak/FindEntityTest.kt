@@ -56,7 +56,7 @@ abstract class FindEntityTest : TestWithDatabase() {
             val fakeId = 0L
             val actualError: DataAccessError = FeatherEntity.findByIdOrError(fakeId).assertLeft()
 
-            assertEquals(DataAccessError.EntityError.NotFoundError::class, actualError::class)
+            assertEquals(DataAccessError.QueryError.NotFoundError::class, actualError::class)
         }
     }
 }
