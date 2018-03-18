@@ -61,4 +61,15 @@ abstract class NewOrErrorTest : TestWithDatabase() {
 
         assertEquals(DataAccessError.SystemError.TransactionError::class, actualError::class)
     }
+
+    @Test
+    fun `should return a failure when the data is invalid`() {
+        transaction {
+            val actualError: DataAccessError = FeatherEntity.newOrError {
+                type = "x".repeat(500)
+            }.assertLeft()
+
+            assertEquals(DataAccessError.QueryError.BadRequestError::class, actualError::class)
+        }
+    }
 }
