@@ -2,6 +2,7 @@ package io.github.codebandits.beak
 
 import arrow.core.Either
 import arrow.data.Try
+import io.github.codebandits.beak.DataAccessError.QueryError.*
 import io.github.codebandits.beak.DataAccessError.SystemError.*
 
 internal fun <T> Try<T>.mapFailureToDataAccessError(): Either<DataAccessError, T> =
@@ -36,6 +37,7 @@ private fun Either<Throwable, DataAccessError>.handleH2Throwables() = maybeHandl
 
 private fun Either<Throwable, DataAccessError>.handleGenericThrowables() = maybeHandleThrowable { throwable ->
     when {
+        throwable is java.sql.BatchUpdateException        -> Either.right(BadRequestError(throwable))
         throwable.message == "No transaction in context." -> Either.right(TransactionError(throwable))
         else                                              -> this
     }
