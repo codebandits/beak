@@ -11,6 +11,7 @@ dependencies {
     compile("io.arrow-kt:arrow-core:$arrowVersion")
     compile("io.arrow-kt:arrow-data:$arrowVersion")
     compile("org.jetbrains.exposed:exposed:$exposedVersion")
+    compileOnly("mysql:mysql-connector-java:$mysqlVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
