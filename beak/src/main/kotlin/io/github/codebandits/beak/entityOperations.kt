@@ -47,3 +47,6 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
 
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, List<T>> =
     Try { find(op).toList() }.mapFailureToDataAccessError()
+
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.deleteOrError(id: ID): Either<DataAccessError, Unit> =
+    findByIdOrError(id).flatMap { it -> Try { it.delete() }.mapFailureToDataAccessError() }
