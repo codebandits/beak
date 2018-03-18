@@ -6,6 +6,8 @@ import arrow.data.Try
 import io.github.codebandits.beak.DataAccessError.QueryError.NotFoundError
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 
 /**
@@ -42,3 +44,6 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
                 else -> Either.right(it)
             }
         }
+
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, List<T>> =
+    Try { find(op).toList() }.mapFailureToDataAccessError()
