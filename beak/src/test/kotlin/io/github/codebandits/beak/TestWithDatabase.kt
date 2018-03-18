@@ -58,7 +58,7 @@ abstract class TestWithDatabase {
 
     protected fun mysqlConfiguration(): DatabaseConfiguration {
         val rootConnection =
-            DriverManager.getConnection("jdbc:mysql://localhost/?user=root&password=&serverTimezone=UTC")
+            DriverManager.getConnection("jdbc:mysql://localhost/?user=root&password=&serverTimezone=UTC&useSSL=false")
 
         val proxy = TcpCrusherBuilder.builder()
             .withReactor(NioReactor())
@@ -76,7 +76,7 @@ abstract class TestWithDatabase {
                 proxy.open()
 
                 Database.connect(
-                    url = "jdbc:mysql://beaktest:beaktest@localhost:3307/beaktest?serverTimezone=UTC",
+                    url = "jdbc:mysql://beaktest:beaktest@localhost:3307/beaktest?serverTimezone=UTC&useSSL=false",
                     driver = "com.mysql.cj.jdbc.Driver"
                 )
                 transaction {
