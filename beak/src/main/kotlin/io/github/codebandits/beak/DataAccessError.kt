@@ -13,6 +13,7 @@ sealed class DataAccessError {
 
     sealed class QueryError : DataAccessError() {
         data class NotFoundError(override val cause: Throwable) : QueryError()
+        data class MultipleFoundError(override val cause: Throwable) : QueryError()
         data class BadRequestError(override val cause: Throwable) : QueryError()
     }
 }

@@ -2,7 +2,7 @@ package io.github.codebandits.beak
 
 import arrow.core.Either
 import arrow.data.Try
-import io.github.codebandits.beak.DataAccessError.QueryError.BadRequestError
+import io.github.codebandits.beak.DataAccessError.QueryError.*
 import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
 import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
 
@@ -37,10 +37,18 @@ private fun Either<Throwable, DataAccessError>.handleH2Throwables() = maybeHandl
 }
 
 private fun Either<Throwable, DataAccessError>.handleGenericThrowables() = maybeHandleThrowable { throwable ->
-    when {
-        throwable is java.sql.BatchUpdateException        -> Either.right(BadRequestError(throwable))
-        throwable.message == "No transaction in context." -> Either.right(TransactionError(throwable))
-        else                                              -> this
+    when (throwable) {
+        is java.util.NoSuchElementException   -> Either.right(NotFoundError(throwable))
+        is java.sql.BatchUpdateException      -> Either.right(BadRequestError(throwable))
+        is java.lang.IllegalArgumentException -> when {
+            throwable.message == "Collection has more than one element." -> Either.right(MultipleFoundError(throwable))
+            else                                                         -> this
+        }
+        is java.lang.IllegalStateException    -> when {
+            throwable.message == "No transaction in context." -> Either.right(TransactionError(throwable))
+            else                                              -> this
+        }
+        else                                  -> this
     }
 }
 
