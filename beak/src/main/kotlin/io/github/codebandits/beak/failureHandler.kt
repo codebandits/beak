@@ -2,8 +2,9 @@ package io.github.codebandits.beak
 
 import arrow.core.Either
 import arrow.data.Try
-import io.github.codebandits.beak.DataAccessError.QueryError.*
-import io.github.codebandits.beak.DataAccessError.SystemError.*
+import io.github.codebandits.beak.DataAccessError.QueryError.BadRequestError
+import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
+import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
 
 internal fun <T> Try<T>.mapFailureToDataAccessError(): Either<DataAccessError, T> =
     toEither()
