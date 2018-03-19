@@ -1,6 +1,8 @@
 package io.github.codebandits.beak
 
 import arrow.core.Either
+import io.github.codebandits.beak.DataAccessError.QueryError.NotFoundError
+import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Tag
@@ -46,7 +48,7 @@ abstract class FindEntityTest : TestWithDatabase() {
         transaction {
             val actualError: DataAccessError = FeatherEntity.findByIdOrError(0L).assertLeft()
 
-            assertEquals(DataAccessError.SystemError.ConnectionError::class, actualError::class)
+            assertEquals(ConnectionError::class, actualError::class)
         }
     }
 
@@ -56,7 +58,8 @@ abstract class FindEntityTest : TestWithDatabase() {
             val fakeId = 0L
             val actualError: DataAccessError = FeatherEntity.findByIdOrError(fakeId).assertLeft()
 
-            assertEquals(DataAccessError.QueryError.NotFoundError::class, actualError::class)
+            assertEquals(NotFoundError::class, actualError::class)
+            assertEquals(NoSuchElementException::class, actualError.cause::class)
         }
     }
 }

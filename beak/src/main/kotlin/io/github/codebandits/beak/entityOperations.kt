@@ -40,7 +40,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
         .mapFailureToDataAccessError()
         .flatMap {
             when (it) {
-                null -> Either.left(NotFoundError(Throwable("Not found: the value returned from database was null")))
+                null -> Either.left(NotFoundError(NoSuchElementException("Not found: the value returned from database was null")))
                 else -> Either.right(it)
             }
         }
