@@ -1,5 +1,7 @@
 package io.github.codebandits.beak
 
+import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
+import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -51,7 +53,7 @@ abstract class NewOrErrorTest : TestWithDatabase() {
         transaction {
             val actualError: DataAccessError = FeatherEntity.newOrError {}.assertLeft()
 
-            assertEquals(DataAccessError.SystemError.ConnectionError::class, actualError::class)
+            assertEquals(ConnectionError::class, actualError::class)
         }
     }
 
@@ -59,7 +61,7 @@ abstract class NewOrErrorTest : TestWithDatabase() {
     fun `should return a failure when there is no transaction`() {
         val actualError: DataAccessError = FeatherEntity.newOrError {}.assertLeft()
 
-        assertEquals(DataAccessError.SystemError.TransactionError::class, actualError::class)
+        assertEquals(TransactionError::class, actualError::class)
     }
 
     @Test
