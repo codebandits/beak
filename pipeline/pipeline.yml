@@ -1,14 +1,79 @@
 ---
 jobs:
-- name: beak
-  serial: true
+- name: H2 tests
   plan:
   - get: beak-source
     trigger: true
+  - task: Test H2
+    file: beak-source/pipeline/tasks/test-h2.yml
+- name: MySQL 5.7 tests
+  plan:
+  - get: beak-source
+    trigger: true
+  - aggregate:
+    - task: Test MySQL 5.7.21
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.21}
+    - task: Test MySQL 5.7.20
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.20}
+    - task: Test MySQL 5.7.19
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.19}
+    - task: Test MySQL 5.7.18
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.18}
+    - task: Test MySQL 5.7.17
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.17}
+    - task: Test MySQL 5.7.16
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.16}
+    - task: Test MySQL 5.7.15
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.15}
+    - task: Test MySQL 5.7.14
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.14}
+    - task: Test MySQL 5.7.13
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.13}
+    - task: Test MySQL 5.7.12
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.12}
+    - task: Test MySQL 5.7.11
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.11}
+    - task: Test MySQL 5.7.10
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.10}
+    - task: Test MySQL 5.7.9
+      privileged: true
+      file: beak-source/pipeline/tasks/test-mysql.yml
+      params: {MYSQL_VERSION: 5.7.9}
+
+- name: publish
+  serial: true
+  plan:
+  - get: beak-source
+    passed: [H2 tests, MySQL 5.7 tests]
+    trigger: true
   - task: get version numbers
     file: beak-source/pipeline/tasks/get-version-numbers.yml
-  - task: test / build / publish
-    file: beak-source/pipeline/tasks/test-build-publish.yml
+  - task: build and publish
+    file: beak-source/pipeline/tasks/build-publish.yml
     params:
       BINTRAY_USER: ((bintray-user))
       BINTRAY_API_KEY: ((bintray-api-key))

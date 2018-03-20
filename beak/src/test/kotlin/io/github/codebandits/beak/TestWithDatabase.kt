@@ -6,10 +6,11 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.netcrusher.tcp.TcpCrusherBuilder
-import java.sql.DriverManager
 import org.netcrusher.core.reactor.NioReactor
-
+import org.netcrusher.tcp.TcpCrusherBuilder
+import java.net.ServerSocket
+import java.net.URI
+import java.sql.DriverManager
 
 abstract class TestWithDatabase {
 
@@ -57,13 +58,24 @@ abstract class TestWithDatabase {
     }
 
     protected fun mysqlConfiguration(): DatabaseConfiguration {
-        val rootConnection =
-            DriverManager.getConnection("jdbc:mysql://localhost/?user=root&password=&serverTimezone=UTC&useSSL=false")
+
+        val localMysqlHost = "mysql://root:@localhost:3306/?serverTimezone=UTC&useSSL=false"
+
+        val rootHostUri = (System.getProperty("test.db.mysql") ?: localMysqlHost).let(URI::create)
+
+        val proxyHostUri = rootHostUri.copy(
+            host = "localhost",
+            port = findOpenPort(),
+            path = "/beaktest",
+            userInfo = "beaktest:beaktest"
+        )
+
+        val rootConnection = DriverManager.getConnection("jdbc:$rootHostUri")
 
         val proxy = TcpCrusherBuilder.builder()
             .withReactor(NioReactor())
-            .withBindAddress("localhost", 3307)
-            .withConnectAddress("localhost", 3306)
+            .withBindAddress(proxyHostUri.host, proxyHostUri.port)
+            .withConnectAddress(rootHostUri.host, rootHostUri.port)
             .build()
 
         return DatabaseConfiguration(
@@ -75,10 +87,8 @@ abstract class TestWithDatabase {
 
                 proxy.open()
 
-                Database.connect(
-                    url = "jdbc:mysql://beaktest:beaktest@localhost:3307/beaktest?serverTimezone=UTC&useSSL=false",
-                    driver = "com.mysql.cj.jdbc.Driver"
-                )
+                Database.connect(url = "jdbc:$proxyHostUri", driver = "com.mysql.cj.jdbc.Driver")
+
                 transaction {
                     SchemaUtils.create(FeatherTable)
                 }
@@ -92,5 +102,21 @@ abstract class TestWithDatabase {
                 proxy.close()
             }
         )
+    }
+
+    private fun URI.copy(
+        scheme: String = this.scheme,
+        userInfo: String = this.userInfo,
+        host: String = this.host,
+        port: Int = this.port,
+        path: String = this.path,
+        query: String = this.query,
+        fragment: String? = this.fragment
+    ): URI = URI(scheme, userInfo, host, port, path, query, fragment)
+
+    private fun findOpenPort(): Int {
+        val socket = ServerSocket(0)
+        socket.close()
+        return socket.localPort
     }
 }

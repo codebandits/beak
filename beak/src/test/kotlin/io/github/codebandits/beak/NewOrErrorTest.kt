@@ -1,13 +1,16 @@
 package io.github.codebandits.beak
 
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
+@Tag("h2")
 class NewOrErrorH2Test : NewOrErrorTest() {
     override val databaseConfiguration = h2Configuration()
 }
 
+@Tag("mysql")
 class NewOrErrorMysqlTest : NewOrErrorTest() {
     override val databaseConfiguration = mysqlConfiguration()
 }

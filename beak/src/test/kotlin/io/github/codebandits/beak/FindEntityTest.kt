@@ -3,13 +3,16 @@ package io.github.codebandits.beak
 import arrow.core.Either
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
+@Tag("h2")
 class FindEntityH2Test : FindEntityTest() {
     override val databaseConfiguration = h2Configuration()
 }
 
+@Tag("mysql")
 class FindEntityMysqlTest : FindEntityTest() {
     override val databaseConfiguration = mysqlConfiguration()
 }

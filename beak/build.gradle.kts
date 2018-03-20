@@ -39,3 +39,25 @@ publishing {
         }
     }
 }
+
+tasks {
+    withType<Test> {
+        project.properties["test.db.mysql"]?.also { systemProperty("test.db.mysql", it) }
+    }
+
+    "testMySQL"(Test::class) {
+        useJUnitPlatform {
+            filter {
+                includeTags("mysql")
+            }
+        }
+    }
+
+    "testH2"(Test::class) {
+        useJUnitPlatform {
+            filter {
+                includeTags("h2")
+            }
+        }
+    }
+}
