@@ -1,5 +1,6 @@
 project.extra.set("jvmTarget", "1.8")
 project.extra.set("kotlinVersion", "1.2.30")
+project.extra.set("dokkaVersion", "0.9.16")
 project.extra.set("junitVersion", "5.1.0")
 project.extra.set("arrowVersion", "0.6.1")
 project.extra.set("exposedVersion", "0.10.1")

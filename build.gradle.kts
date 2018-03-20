@@ -4,6 +4,7 @@ buildscript {
     project.apply { from("gradle/scripts/versions.gradle.kts") }
 
     val kotlinVersion: String by extra
+    val dokkaVersion: String by extra
 
     repositories {
         jcenter()
@@ -11,14 +12,13 @@ buildscript {
 
     dependencies {
         classpath(kotlin(module = "gradle-plugin", version = kotlinVersion))
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
     }
 }
 
 allprojects {
     apply {
         from("${rootProject.projectDir}/gradle/scripts/versions.gradle.kts")
-        plugin("org.jetbrains.kotlin.jvm")
-        plugin("maven-publish")
     }
 
     val jvmTarget: String by extra
@@ -50,5 +50,13 @@ allprojects {
                 !is String, "unspecified" -> throw Throwable("${project.name} version is not specified (was \"$version\")")
             }
         }
+    }
+}
+
+subprojects {
+    apply {
+        plugin("org.jetbrains.kotlin.jvm")
+        plugin("org.jetbrains.dokka")
+        plugin("maven-publish")
     }
 }
