@@ -26,8 +26,14 @@ dependencies {
 }
 
 publishing {
+    val sourceJar = task("sourceJar", type = Jar::class) {
+        classifier = "sources"
+        from(the<JavaPluginConvention>().sourceSets.getByName("main").allSource)
+    }
+
     publications.create<MavenPublication>(name) {
         from(components["java"])
+        artifact(sourceJar)
     }
 
     repositories {
