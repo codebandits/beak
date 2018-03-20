@@ -1,0 +1,31 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: quay.io/cosee-concourse/dind
+    tag: latest
+
+inputs:
+- name: beak-source
+
+params:
+  POSTGRESQL_VERSION:
+
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    source /docker-lib.sh
+    start_docker
+
+    docker network create beak
+
+    docker run -d --name postgresql -e POSTGRES_PASSWORD=postgres --network beak postgres:$POSTGRESQL_VERSION
+
+    docker run -v $(pwd)/beak-source:/source -i --network beak openjdk:9-jdk-slim bash -ex <<CMD
+      cd /source
+      ./gradlew beak:testPostgreSQL -Ptest.db.postgresql="postgresql://postgresql.beak:5432/postgres?user=postgres&password=postgres"
+    CMD

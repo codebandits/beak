@@ -64,11 +64,110 @@ jobs:
       file: beak-source/pipeline/tasks/test-mysql.yml
       params: {MYSQL_VERSION: 5.7.9}
 
+- name: PostgreSQL 10 tests
+  plan:
+  - get: beak-source
+    trigger: true
+  - aggregate:
+    - task: Test PostgreSQL 10.3
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 10.3-alpine}
+    - task: Test PostgreSQL 10.2
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 10.2-alpine}
+    - task: Test PostgreSQL 10.1
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 10.1-alpine}
+    - task: Test PostgreSQL 10.0
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 10.0-alpine}
+
+- name: PostgreSQL 9.6 tests
+  plan:
+  - get: beak-source
+    trigger: true
+  - aggregate:
+    - task: Test PostgreSQL 9.6.8
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.6.8-alpine}
+    - task: Test PostgreSQL 9.6.7
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.6.7-alpine}
+    - task: Test PostgreSQL 9.6.6
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.6.6-alpine}
+    - task: Test PostgreSQL 9.6.5
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.6.5-alpine}
+    - task: Test PostgreSQL 9.6.4
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.6.4-alpine}
+    - task: Test PostgreSQL 9.6.3
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.6.3-alpine}
+    - task: Test PostgreSQL 9.6.2
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.6.2-alpine}
+
+- name: PostgreSQL 9.5 tests
+  plan:
+  - get: beak-source
+    trigger: true
+  - aggregate:
+    - task: Test PostgreSQL 9.5.12
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.12-alpine}
+    - task: Test PostgreSQL 9.5.11
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.11-alpine}
+    - task: Test PostgreSQL 9.5.10
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.10-alpine}
+    - task: Test PostgreSQL 9.5.9
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.9-alpine}
+    - task: Test PostgreSQL 9.5.8
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.8-alpine}
+    - task: Test PostgreSQL 9.5.7
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.7-alpine}
+    - task: Test PostgreSQL 9.5.6
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.6-alpine}
+    - task: Test PostgreSQL 9.5.5
+      privileged: true
+      file: beak-source/pipeline/tasks/test-postgresql.yml
+      params: {POSTGRESQL_VERSION: 9.5.5-alpine}
+
 - name: publish
   serial: true
   plan:
   - get: beak-source
-    passed: [H2 tests, MySQL 5.7 tests]
+    passed:
+    - H2 tests
+    - MySQL 5.7 tests
+    - PostgreSQL 10 tests
+    - PostgreSQL 9.6 tests
+    - PostgreSQL 9.5 tests
     trigger: true
   - task: get version numbers
     file: beak-source/pipeline/tasks/get-version-numbers.yml

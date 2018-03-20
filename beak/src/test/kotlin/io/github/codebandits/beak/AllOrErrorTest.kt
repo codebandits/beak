@@ -16,6 +16,11 @@ class AllOrErrorMysqlTest : AllOrErrorTest() {
     override val databaseConfiguration = mysqlConfiguration()
 }
 
+@Tag("postgresql")
+class AllOrErrorPostgresqlTest : AllOrErrorTest() {
+    override val databaseConfiguration = postgresqlConfiguration()
+}
+
 abstract class AllOrErrorTest : TestWithDatabase() {
 
     @Test

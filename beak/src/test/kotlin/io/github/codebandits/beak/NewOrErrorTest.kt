@@ -15,6 +15,11 @@ class NewOrErrorMysqlTest : NewOrErrorTest() {
     override val databaseConfiguration = mysqlConfiguration()
 }
 
+@Tag("postgresql")
+class NewOrErrorPostgresqlTest : NewOrErrorTest() {
+    override val databaseConfiguration = postgresqlConfiguration()
+}
+
 abstract class NewOrErrorTest : TestWithDatabase() {
 
     @Test

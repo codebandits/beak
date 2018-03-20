@@ -17,6 +17,11 @@ class FindEntityMysqlTest : FindEntityTest() {
     override val databaseConfiguration = mysqlConfiguration()
 }
 
+@Tag("postgresql")
+class FindEntityPostgresqlTest : FindEntityTest() {
+    override val databaseConfiguration = postgresqlConfiguration()
+}
+
 abstract class FindEntityTest : TestWithDatabase() {
 
     @Test

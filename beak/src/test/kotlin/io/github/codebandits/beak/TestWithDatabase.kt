@@ -1,5 +1,6 @@
 package io.github.codebandits.beak
 
+import org.apache.http.client.utils.URIBuilder
 import org.h2.tools.Server
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -63,12 +64,12 @@ abstract class TestWithDatabase {
 
         val rootHostUri = (System.getProperty("test.db.mysql") ?: localMysqlHost).let(URI::create)
 
-        val proxyHostUri = rootHostUri.copy(
-            host = "localhost",
-            port = findOpenPort(),
-            path = "/beaktest",
-            userInfo = "beaktest:beaktest"
-        )
+        val proxyHostUri = URIBuilder(rootHostUri)
+            .setHost("localhost")
+            .setPort(findOpenPort())
+            .setPath("/beaktest")
+            .setUserInfo("beaktest:beaktest")
+            .build()
 
         val rootConnection = DriverManager.getConnection("jdbc:$rootHostUri")
 
@@ -104,15 +105,55 @@ abstract class TestWithDatabase {
         )
     }
 
-    private fun URI.copy(
-        scheme: String = this.scheme,
-        userInfo: String = this.userInfo,
-        host: String = this.host,
-        port: Int = this.port,
-        path: String = this.path,
-        query: String = this.query,
-        fragment: String? = this.fragment
-    ): URI = URI(scheme, userInfo, host, port, path, query, fragment)
+    protected fun postgresqlConfiguration(): DatabaseConfiguration {
+
+        val localPostgresqlHost = "postgresql://localhost:5432/postgres"
+
+        val rootHostUri = (System.getProperty("test.db.postgresql") ?: localPostgresqlHost).let(URI::create)
+
+        val proxyHostUri = URIBuilder(rootHostUri)
+            .setHost("localhost")
+            .setPort(findOpenPort())
+            .setPath("/beaktest")
+            .setParameter("user", "beaktest")
+            .setParameter("password", "beaktest")
+            .build()
+
+        val rootConnection = DriverManager.getConnection("jdbc:$rootHostUri")
+
+        val proxy = TcpCrusherBuilder.builder()
+            .withReactor(NioReactor())
+            .withBindAddress(proxyHostUri.host, proxyHostUri.port)
+            .withConnectAddress(rootHostUri.host, rootHostUri.port)
+            .build()
+
+        return DatabaseConfiguration(
+            setUp = {
+                rootConnection.createStatement().execute("DROP DATABASE IF EXISTS beaktest")
+                rootConnection.createStatement().execute("DROP USER IF EXISTS beaktest")
+                rootConnection.createStatement().execute("CREATE DATABASE beaktest")
+                rootConnection.createStatement().execute("CREATE USER beaktest WITH PASSWORD 'beaktest'")
+                rootConnection.createStatement()
+                    .execute("GRANT ALL PRIVILEGES ON DATABASE beaktest TO beaktest")
+
+                proxy.open()
+
+                Database.connect(url = "jdbc:$proxyHostUri", driver = "org.postgresql.Driver")
+
+                transaction {
+                    SchemaUtils.create(FeatherTable)
+                }
+            },
+            interruptDatabase = {
+                proxy.close()
+            },
+            tearDown = {
+                if (!proxy.isOpen) proxy.open()
+                transaction { SchemaUtils.drop(FeatherTable) }
+                proxy.close()
+            }
+        )
+    }
 
     private fun findOpenPort(): Int {
         val socket = ServerSocket(0)
