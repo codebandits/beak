@@ -16,7 +16,7 @@ import org.jetbrains.exposed.sql.transactions.TransactionManager
  * @return A list of all the entities or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.allOrError(): Either<DataAccessError, List<T>> =
-    Try { all().toList() }.mapFailureToDataAccessError()
+        Try { all().toList() }.mapFailureToDataAccessError()
 
 /**
  * Create a new entity with the fields that are set in the [init] block. The id will be automatically set.
@@ -26,7 +26,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.allOrError(): Eithe
  * @return The entity that has been created or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.newOrError(init: T.() -> Unit): Either<DataAccessError, T> =
-    Try { new(init).also { TransactionManager.current().commit() } }.mapFailureToDataAccessError()
+        Try { new(init).also { TransactionManager.current().commit() } }.mapFailureToDataAccessError()
 
 /**
  * Get an entity by its [id].
@@ -36,14 +36,14 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.newOrError(init: T.
  * @return The entity that has this id or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id: ID): Either<DataAccessError, T> =
-    Try { findById(id) }
-        .mapFailureToDataAccessError()
-        .flatMap {
-            when (it) {
-                null -> Either.left(NotFoundError(NoSuchElementException("Not found: the value returned from database was null")))
-                else -> Either.right(it)
-            }
-        }
+        Try { findById(id) }
+                .mapFailureToDataAccessError()
+                .flatMap {
+                    when (it) {
+                        null -> Either.left(NotFoundError(NoSuchElementException("Not found: the value returned from database was null")))
+                        else -> Either.right(it)
+                    }
+                }
 
 /**
  * Get all the entities that conform to the [op] statement.
@@ -53,7 +53,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
  * @return All the entities that conform to the [op] statement or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, List<T>> =
-    Try { find(op).toList() }.mapFailureToDataAccessError()
+        Try { find(op).toList() }.mapFailureToDataAccessError()
 
 /**
  * Get the entity that conforms to the [op] statement.
@@ -63,10 +63,26 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: Sql
  * @return The one entity that conforms to the [op] statement or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOneOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, T> =
-    Try { find(op).single() }.mapFailureToDataAccessError()
+        Try { find(op).single() }.mapFailureToDataAccessError()
 
 /**
  * Delete an entity by its [id].
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.deleteOrError(id: ID): Either<DataAccessError, Unit> =
-    findByIdOrError(id).flatMap { it -> Try { it.delete() }.mapFailureToDataAccessError() }
+        findByIdOrError(id).flatMap { Try { it.delete() }.mapFailureToDataAccessError() }
+
+/**
+ *  Update the entity by its id
+ */
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateByIdOrError(id: ID, updater: T.()->Unit): Either<DataAccessError, Boolean> =
+        findByIdOrError(id).flatMap {
+            Try { it.apply(updater).flush() }.mapFailureToDataAccessError()
+        }
+
+/**
+ *  Update entities returned by the given operation
+ */
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateOrError(op: SqlExpressionBuilder.() -> Op<Boolean>, updater: T.()->Unit): Either<DataAccessError, Boolean> =
+        findOrError(op)
+                .flatMap { Try { it.map { it.apply(updater).flush() } }.mapFailureToDataAccessError() }
+                .map { it.all { it } }
