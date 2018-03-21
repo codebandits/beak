@@ -17,7 +17,7 @@ class FindOrErrorMysqlTest : FindOrErrorTest() {
 
 @Tag("postgresql")
 class FindOrErroPostgresqlTest : FindOrErrorTest() {
-    override val databaseConfiguration = mysqlConfiguration()
+    override val databaseConfiguration = postgresqlConfiguration()
 }
 
 abstract class FindOrErrorTest : TestWithDatabase() {
