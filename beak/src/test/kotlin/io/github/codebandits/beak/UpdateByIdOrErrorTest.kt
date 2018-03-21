@@ -54,13 +54,13 @@ abstract class UpdateByIdOrErrorTest : TestWithDatabase() {
                 type = "contour"
             }.assertRight()
 
-            FeatherEntity.updateOrError({FeatherTable.type eq "contour"}) {
+            FeatherEntity.updateOrError({ FeatherTable.type eq "contour" }) {
                 type = "contour-updated"
             }.assertRight()
 
             assertEquals(
-                    2,
-                    FeatherEntity.findOrError({FeatherTable.type eq "contour-updated"}).assertRight().count()
+                2,
+                FeatherEntity.findOrError({ FeatherTable.type eq "contour-updated" }).assertRight().count()
             )
         }
     }

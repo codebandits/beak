@@ -33,13 +33,13 @@ abstract class UpdateOrErrorTest : TestWithDatabase() {
                 type = "contour"
             }.assertRight()
 
-            FeatherEntity.updateOrError({FeatherTable.type eq "contour"}) {
+            FeatherEntity.updateOrError({ FeatherTable.type eq "contour" }) {
                 type = "contour-updated"
             }.assertRight()
 
             assertEquals(
-                    2,
-                    FeatherEntity.findOrError({FeatherTable.type eq "contour-updated"}).assertRight().count()
+                2,
+                FeatherEntity.findOrError({ FeatherTable.type eq "contour-updated" }).assertRight().count()
             )
         }
     }
@@ -49,7 +49,7 @@ abstract class UpdateOrErrorTest : TestWithDatabase() {
         databaseConfiguration.interruptDatabase()
 
         transaction {
-            val actualError: DataAccessError = FeatherEntity.updateOrError({FeatherTable.id eq 0L}) {
+            val actualError: DataAccessError = FeatherEntity.updateOrError({ FeatherTable.id eq 0L }) {
                 type = "should not happen"
             }.assertLeft()
 
@@ -59,7 +59,7 @@ abstract class UpdateOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should return a failure when there is no entities to update`() {
-        val actualError: DataAccessError = FeatherEntity.updateOrError({FeatherTable.type eq "contour"}) {
+        val actualError: DataAccessError = FeatherEntity.updateOrError({ FeatherTable.type eq "contour" }) {
             type = "empty"
         }.assertLeft()
 
