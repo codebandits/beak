@@ -45,11 +45,28 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
             }
         }
 
+/**
+ * Get all the entities that conform to the [op] statement.
+ *
+ * @param op The statement with which to select the entities. The statement must be of boolean type.
+ *
+ * @return All the entities that conform to the [op] statement or a DataAccessError.
+ */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, List<T>> =
     Try { find(op).toList() }.mapFailureToDataAccessError()
 
+/**
+ * Get the entity that conforms to the [op] statement.
+ *
+ * @param op The statement with which to select the entity. The statement must be of boolean type.
+ *
+ * @return The one entity that conforms to the [op] statement or a DataAccessError.
+ */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOneOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, T> =
     Try { find(op).single() }.mapFailureToDataAccessError()
 
+/**
+ * Delete an entity by its [id].
+ */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.deleteOrError(id: ID): Either<DataAccessError, Unit> =
     findByIdOrError(id).flatMap { it -> Try { it.delete() }.mapFailureToDataAccessError() }
