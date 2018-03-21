@@ -1,6 +1,6 @@
 # Beak
 
-[![Concourse](https://wings.concourse-ci.org/api/v1/teams/codebandits/pipelines/beak/badge)](https://wings.concourse-ci.org/teams/codebandits/pipelines/beak)
+[![Concourse](https://wings.pivotal.io/api/v1/teams/codebandits/pipelines/beak/badge)](https://wings.pivotal.io/teams/codebandits/pipelines/beak)
 [![Download](https://api.bintray.com/packages/codebandits/beak/beak/images/download.svg)](https://bintray.com/codebandits/beak/beak/_latestVersion)
 
 Beak is a functional Kotlin SQL DSL. It provides a type-safe, exception-free data access layer.
