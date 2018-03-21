@@ -183,3 +183,5 @@ resources:
   source:
     uri: https://github.com/codebandits/beak.git
     branch: master
+  check_every: 24h
+  webhook_token: ((git-webhook-token))
