@@ -34,6 +34,16 @@ abstract class DeleteEntityTest : TestWithDatabase() {
     }
 
     @Test
+    fun `should return not found error when entity does not exist`() {
+        transaction {
+            val fakeId = 0L
+            val actualError: DataAccessError = FeatherEntity.deleteOrError(fakeId).assertLeft()
+
+            assertEquals(DataAccessError.QueryError.NotFoundError::class, actualError::class)
+        }
+    }
+
+    @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
@@ -45,12 +55,9 @@ abstract class DeleteEntityTest : TestWithDatabase() {
     }
 
     @Test
-    fun `should return not found error when entity does not exist`() {
-        transaction {
-            val fakeId = 0L
-            val actualError: DataAccessError = FeatherEntity.deleteOrError(fakeId).assertLeft()
+    fun `should return a failure when there is no transaction`() {
+        val actualError: DataAccessError = FeatherEntity.deleteOrError(0L).assertLeft()
 
-            assertEquals(DataAccessError.QueryError.NotFoundError::class, actualError::class)
-        }
+        assertEquals(DataAccessError.SystemError.TransactionError::class, actualError::class)
     }
 }

@@ -72,23 +72,33 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.deleteOrError(id: I
     findByIdOrError(id).flatMap { it -> Try { it.delete() }.mapFailureToDataAccessError() }
 
 /**
- *  Update the entity by its id
+ * Update an entity by its [id].
+ *
+ * @param id The id of the entity.
+ * @param update The block where the entity's fields can be set.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateByIdOrError(
     id: ID,
-    updater: T.() -> Unit
-): Either<DataAccessError, Boolean> =
-    findByIdOrError(id).flatMap {
-        Try { it.apply(updater).flush() }.mapFailureToDataAccessError()
-    }
+    update: T.() -> Unit
+): Either<DataAccessError, Unit> =
+    findByIdOrError(id)
+        .flatMap { Try { it.apply(update) }.mapFailureToDataAccessError() }
+        .map { Unit }
 
 /**
- *  Update entities returned by the given operation
+ * Update the entities that match a selection.
+ *
+ * @param op The statement with which to select the entities. The statement must be of boolean type.
+ * @param update The block where the entity's fields can be set.
  */
-fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateOrError(
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateWhereOrError(
     op: SqlExpressionBuilder.() -> Op<Boolean>,
-    updater: T.() -> Unit
-): Either<DataAccessError, Boolean> =
+    update: T.() -> Unit
+): Either<DataAccessError, Unit> =
     findOrError(op)
-        .flatMap { Try { it.map { it.apply(updater).flush() } }.mapFailureToDataAccessError() }
-        .map { it.all { it } }
+        .flatMap {
+            if (it.isNotEmpty()) Either.right(it)
+            else Either.left(NotFoundError(NoSuchElementException("Not found: no matching entities found in the database")))
+        }
+        .flatMap { Try { it.map { it.apply(update) } }.mapFailureToDataAccessError() }
+        .map { Unit }
