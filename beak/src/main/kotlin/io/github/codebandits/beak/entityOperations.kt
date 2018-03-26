@@ -74,7 +74,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: Sql
  * @return The one entity that conforms to the [op] statement or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOneOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, T> =
-    Try { find(op).single() }.mapFailureToDataAccessError()
+    Try { transaction { find(op).single() } }.mapFailureToDataAccessError()
 
 /**
  * Delete an entity by its [id].
