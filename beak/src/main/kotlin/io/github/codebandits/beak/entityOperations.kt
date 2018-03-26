@@ -16,7 +16,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
  * @return A list of all the entities or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.allOrError(): Either<DataAccessError, List<T>> =
-    Try { all().toList() }.mapFailureToDataAccessError()
+    Try { transaction { all().toList() } }.mapFailureToDataAccessError()
 
 /**
  * Create a new entity with the fields that are set in the [init] block. The id will be automatically set.
