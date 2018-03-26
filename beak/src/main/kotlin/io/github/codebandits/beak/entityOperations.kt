@@ -93,7 +93,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateByIdOrError(
     update: T.() -> Unit
 ): Either<DataAccessError, Unit> =
     findByIdOrError(id)
-        .flatMap { Try { it.apply(update) }.mapFailureToDataAccessError() }
+        .flatMap { Try { transaction { it.apply(update) } }.mapFailureToDataAccessError() }
         .map { Unit }
 
 /**
