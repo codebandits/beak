@@ -8,21 +8,21 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 @Tag("h2")
-class FindOneOrErrorH2Test : FindOneOrErrorTest() {
+class FindOneWhereOrErrorH2Test : FindOneWhereOrErrorTest() {
     override val databaseConfiguration = h2Configuration()
 }
 
 @Tag("mysql")
-class FindOneOrErrorMysqlTest : FindOneOrErrorTest() {
+class FindOneWhereOrErrorMysqlTest : FindOneWhereOrErrorTest() {
     override val databaseConfiguration = mysqlConfiguration()
 }
 
 @Tag("postgresql")
-class FindOneOrErrorPostgresqlTest : FindOneOrErrorTest() {
+class FindOneWhereOrErrorPostgresqlTest : FindOneWhereOrErrorTest() {
     override val databaseConfiguration = postgresqlConfiguration()
 }
 
-abstract class FindOneOrErrorTest : TestWithDatabase() {
+abstract class FindOneWhereOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should return the matching record in the database`() {
@@ -30,7 +30,7 @@ abstract class FindOneOrErrorTest : TestWithDatabase() {
         FeatherEntity.newOrError { type = "contour" }.assertRight()
         FeatherEntity.newOrError { type = "down" }.assertRight()
 
-        val featherEntity = FeatherEntity.findOneOrError { FeatherTable.type eq "down" }.assertRight()
+        val featherEntity = FeatherEntity.findOneWhereOrError { FeatherTable.type eq "down" }.assertRight()
         assertEquals("down", featherEntity.type)
     }
 
@@ -40,7 +40,7 @@ abstract class FindOneOrErrorTest : TestWithDatabase() {
         FeatherEntity.newOrError { type = "contour" }.assertRight()
         FeatherEntity.newOrError { type = "down" }.assertRight()
 
-        val error = FeatherEntity.findOneOrError { FeatherTable.type eq "filoplume" }.assertLeft()
+        val error = FeatherEntity.findOneWhereOrError { FeatherTable.type eq "filoplume" }.assertLeft()
         assertEquals(NotFoundError::class, error::class)
     }
 
@@ -50,7 +50,7 @@ abstract class FindOneOrErrorTest : TestWithDatabase() {
         FeatherEntity.newOrError { type = "contour" }.assertRight()
         FeatherEntity.newOrError { type = "down" }.assertRight()
 
-        val error = FeatherEntity.findOneOrError { FeatherTable.type eq "contour" }.assertLeft()
+        val error = FeatherEntity.findOneWhereOrError { FeatherTable.type eq "contour" }.assertLeft()
         assertEquals(MultipleFoundError::class, error::class)
     }
 
@@ -58,7 +58,7 @@ abstract class FindOneOrErrorTest : TestWithDatabase() {
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
-        val error = FeatherEntity.findOneOrError { FeatherTable.type eq "contour" }.assertLeft()
+        val error = FeatherEntity.findOneWhereOrError { FeatherTable.type eq "contour" }.assertLeft()
         assertEquals(ConnectionError::class, error::class)
     }
 }
