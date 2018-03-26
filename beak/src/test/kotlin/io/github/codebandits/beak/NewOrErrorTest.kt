@@ -1,8 +1,7 @@
 package io.github.codebandits.beak
 
+import io.github.codebandits.beak.DataAccessError.QueryError.BadRequestError
 import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
-import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -26,52 +25,28 @@ abstract class NewOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should create a record in the database`() {
-        transaction {
-            FeatherEntity.newOrError {}.assertRight()
-        }
+        FeatherEntity.newOrError {}.assertRight()
 
-        transaction {
-            assertEquals(1, FeatherEntity.allOrError().assertRight().count())
-        }
+        assertEquals(1, FeatherEntity.countOrError().assertRight())
     }
 
     @Test
     fun `should save the data into a record in the database`() {
-        transaction {
-            val feather = FeatherEntity.newOrError {
-                type = "contour"
-            }.assertRight()
-
-            assertEquals("contour", feather.type)
-        }
+        val featherEntity = FeatherEntity.newOrError { type = "contour" }.assertRight()
+        assertEquals("contour", featherEntity.type)
     }
 
     @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
-        transaction {
-            val actualError: DataAccessError = FeatherEntity.newOrError {}.assertLeft()
-
-            assertEquals(ConnectionError::class, actualError::class)
-        }
-    }
-
-    @Test
-    fun `should return a failure when there is no transaction`() {
-        val actualError: DataAccessError = FeatherEntity.newOrError {}.assertLeft()
-
-        assertEquals(TransactionError::class, actualError::class)
+        val error = FeatherEntity.newOrError {}.assertLeft()
+        assertEquals(ConnectionError::class, error::class)
     }
 
     @Test
     fun `should return a failure when the data is invalid`() {
-        transaction {
-            val actualError: DataAccessError = FeatherEntity.newOrError {
-                type = "x".repeat(500)
-            }.assertLeft()
-
-            assertEquals(DataAccessError.QueryError.BadRequestError::class, actualError::class)
-        }
+        val error = FeatherEntity.newOrError { type = "x".repeat(500) }.assertLeft()
+        assertEquals(BadRequestError::class, error::class)
     }
 }
