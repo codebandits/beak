@@ -6,21 +6,21 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 @Tag("h2")
-class FindOrErrorH2Test : FindOrErrorTest() {
+class FindWhereOrErrorH2Test : FindWhereOrErrorTest() {
     override val databaseConfiguration = h2Configuration()
 }
 
 @Tag("mysql")
-class FindOrErrorMysqlTest : FindOrErrorTest() {
+class FindWhereOrErrorMysqlTest : FindWhereOrErrorTest() {
     override val databaseConfiguration = mysqlConfiguration()
 }
 
 @Tag("postgresql")
-class FindOrErrorPostgresqlTest : FindOrErrorTest() {
+class FindWhereOrErrorPostgresqlTest : FindWhereOrErrorTest() {
     override val databaseConfiguration = postgresqlConfiguration()
 }
 
-abstract class FindOrErrorTest : TestWithDatabase() {
+abstract class FindWhereOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should return each matching record in the database`() {
@@ -28,7 +28,7 @@ abstract class FindOrErrorTest : TestWithDatabase() {
         FeatherEntity.newOrError { type = "contour" }
         FeatherEntity.newOrError { type = "down" }
 
-        assertEquals(2, FeatherEntity.findOrError { FeatherTable.type eq "contour" }.assertRight().count())
+        assertEquals(2, FeatherEntity.findWhereOrError { FeatherTable.type eq "contour" }.assertRight().count())
     }
 
     @Test
@@ -37,14 +37,14 @@ abstract class FindOrErrorTest : TestWithDatabase() {
         FeatherEntity.newOrError { type = "contour" }
         FeatherEntity.newOrError { type = "down" }
 
-        assertEquals(0, FeatherEntity.findOrError { FeatherTable.type eq "filoplume" }.assertRight().count())
+        assertEquals(0, FeatherEntity.findWhereOrError { FeatherTable.type eq "filoplume" }.assertRight().count())
     }
 
     @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
-        val error = FeatherEntity.findOrError { FeatherTable.type eq "contour" }.assertLeft()
+        val error = FeatherEntity.findWhereOrError { FeatherTable.type eq "contour" }.assertLeft()
         assertEquals(ConnectionError::class, error::class)
     }
 }
