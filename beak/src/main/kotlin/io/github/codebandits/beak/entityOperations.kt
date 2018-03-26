@@ -80,7 +80,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOneOrError(op: 
  * Delete an entity by its [id].
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.deleteOrError(id: ID): Either<DataAccessError, Unit> =
-    findByIdOrError(id).flatMap { it -> Try { it.delete() }.mapFailureToDataAccessError() }
+    findByIdOrError(id).flatMap { Try { transaction { it.delete() } }.mapFailureToDataAccessError() }
 
 /**
  * Update an entity by its [id].

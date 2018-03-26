@@ -1,6 +1,5 @@
 package io.github.codebandits.beak
 
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -24,33 +23,24 @@ abstract class DeleteEntityTest : TestWithDatabase() {
 
     @Test
     fun `should delete an entity from the database`() {
-        transaction {
-            val entity = FeatherEntity.newOrError {}.assertRight()
-            assertEquals(1, FeatherEntity.allOrError().assertRight().count())
+        val featherId = FeatherEntity.newOrError {}.assertRight().id.value
+        assertEquals(1, FeatherEntity.countOrError().assertRight())
 
-            FeatherEntity.deleteOrError(entity.id.value).assertRight()
-            assertEquals(0, FeatherEntity.allOrError().assertRight().count())
-        }
+        FeatherEntity.deleteOrError(featherId).assertRight()
+        assertEquals(0, FeatherEntity.countOrError().assertRight())
     }
 
     @Test
     fun `should return not found error when entity does not exist`() {
-        transaction {
-            val fakeId = 0L
-            val actualError: DataAccessError = FeatherEntity.deleteOrError(fakeId).assertLeft()
-
-            assertEquals(DataAccessError.QueryError.NotFoundError::class, actualError::class)
-        }
+        val error = FeatherEntity.deleteOrError(0L).assertLeft()
+        assertEquals(DataAccessError.QueryError.NotFoundError::class, error::class)
     }
 
     @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
-        transaction {
-            val actualError: DataAccessError = FeatherEntity.deleteOrError(0L).assertLeft()
-
-            assertEquals(DataAccessError.SystemError.ConnectionError::class, actualError::class)
-        }
+        val error = FeatherEntity.deleteOrError(0L).assertLeft()
+        assertEquals(DataAccessError.SystemError.ConnectionError::class, error::class)
     }
 }
