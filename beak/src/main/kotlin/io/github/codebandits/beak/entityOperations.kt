@@ -47,7 +47,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.countOrError(op: Op
  * @return The entity that has this id or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id: ID): Either<DataAccessError, T> =
-    Try { findById(id) }
+    Try { transaction { findById(id) } }
         .mapFailureToDataAccessError()
         .flatMap {
             when (it) {

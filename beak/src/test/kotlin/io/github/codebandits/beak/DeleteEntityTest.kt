@@ -53,11 +53,4 @@ abstract class DeleteEntityTest : TestWithDatabase() {
             assertEquals(DataAccessError.SystemError.ConnectionError::class, actualError::class)
         }
     }
-
-    @Test
-    fun `should return a failure when there is no transaction`() {
-        val actualError: DataAccessError = FeatherEntity.deleteOrError(0L).assertLeft()
-
-        assertEquals(DataAccessError.SystemError.TransactionError::class, actualError::class)
-    }
 }
