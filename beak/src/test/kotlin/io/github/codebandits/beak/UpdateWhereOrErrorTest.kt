@@ -63,15 +63,6 @@ abstract class UpdateWhereOrErrorTest : TestWithDatabase() {
     }
 
     @Test
-    fun `should return a failure when there is no transaction`() {
-        val actualError: DataAccessError = FeatherEntity.updateWhereOrError({ FeatherTable.id eq 0L }) {
-            type = "should not happen"
-        }.assertLeft()
-
-        assertEquals(TransactionError::class, actualError::class)
-    }
-
-    @Test
     fun `should return a failure when there is no entities to update`() {
         transaction {
             val actualError = FeatherEntity.updateWhereOrError({ FeatherTable.type eq "contour" }) {

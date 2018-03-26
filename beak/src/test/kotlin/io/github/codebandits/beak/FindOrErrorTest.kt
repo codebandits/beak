@@ -1,8 +1,6 @@
 package io.github.codebandits.beak
 
 import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
-import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -26,45 +24,27 @@ abstract class FindOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should return each matching record in the database`() {
-        transaction {
-            FeatherEntity.newOrError { type = "contour" }
-            FeatherEntity.newOrError { type = "contour" }
-            FeatherEntity.newOrError { type = "down" }
-        }
+        FeatherEntity.newOrError { type = "contour" }
+        FeatherEntity.newOrError { type = "contour" }
+        FeatherEntity.newOrError { type = "down" }
 
-        transaction {
-            assertEquals(2, FeatherEntity.findOrError { FeatherTable.type eq "contour" }.assertRight().count())
-        }
+        assertEquals(2, FeatherEntity.findOrError { FeatherTable.type eq "contour" }.assertRight().count())
     }
 
     @Test
     fun `should return an empty list when no records match`() {
-        transaction {
-            FeatherEntity.newOrError { type = "contour" }
-            FeatherEntity.newOrError { type = "contour" }
-            FeatherEntity.newOrError { type = "down" }
-        }
+        FeatherEntity.newOrError { type = "contour" }
+        FeatherEntity.newOrError { type = "contour" }
+        FeatherEntity.newOrError { type = "down" }
 
-        transaction {
-            assertEquals(0, FeatherEntity.findOrError { FeatherTable.type eq "filoplume" }.assertRight().count())
-        }
+        assertEquals(0, FeatherEntity.findOrError { FeatherTable.type eq "filoplume" }.assertRight().count())
     }
 
     @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
-        transaction {
-            val actualError: DataAccessError = FeatherEntity.findOrError { FeatherTable.type eq "contour" }.assertLeft()
-
-            assertEquals(ConnectionError::class, actualError::class)
-        }
-    }
-
-    @Test
-    fun `should return a failure when there is no transaction`() {
-        val actualError: DataAccessError = FeatherEntity.findOrError { FeatherTable.type eq "contour" }.assertLeft()
-
-        assertEquals(TransactionError::class, actualError::class)
+        val error = FeatherEntity.findOrError { FeatherTable.type eq "contour" }.assertLeft()
+        assertEquals(ConnectionError::class, error::class)
     }
 }

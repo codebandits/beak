@@ -64,7 +64,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
  * @return All the entities that conform to the [op] statement or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, List<T>> =
-    Try { find(op).toList() }.mapFailureToDataAccessError()
+    Try { transaction { find(op).toList() } }.mapFailureToDataAccessError()
 
 /**
  * Get the entity that conforms to the [op] statement.
