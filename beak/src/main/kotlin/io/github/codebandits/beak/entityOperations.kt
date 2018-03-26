@@ -111,5 +111,5 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateWhereOrError(
             if (it.isNotEmpty()) Either.right(it)
             else Either.left(NotFoundError(NoSuchElementException("Not found: no matching entities found in the database")))
         }
-        .flatMap { Try { it.map { it.apply(update) } }.mapFailureToDataAccessError() }
+        .flatMap { Try { transaction { it.map { it.apply(update) } } }.mapFailureToDataAccessError() }
         .map { Unit }
