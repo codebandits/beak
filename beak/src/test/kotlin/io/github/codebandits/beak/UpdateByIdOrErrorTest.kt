@@ -26,47 +26,23 @@ abstract class UpdateByIdOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should update an entity from the table`() {
-        val id = transaction {
-            val expectedEntity = FeatherEntity.newOrError {
-                type = "contour"
-            }.assertRight()
+        val featherId = FeatherEntity.newOrError { type = "contour" }.assertRight().id.value
+        FeatherEntity.updateByIdOrError(featherId) { type = "contour-updated" }.assertRight()
 
-            val id = expectedEntity.id.value
-
-            FeatherEntity.updateByIdOrError(id) {
-                type = "contour-updated"
-            }.assertRight()
-
-            id
-        }
-
-        transaction {
-            assertEquals(
-                "contour-updated",
-                FeatherEntity.findByIdOrError(id).assertRight().type
-            )
-        }
+        assertEquals("contour-updated", FeatherEntity.findByIdOrError(featherId).assertRight().type)
     }
 
     @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
-        transaction {
-            assertEquals(
-                ConnectionError::class,
-                FeatherEntity.updateByIdOrError(0L) { type = "should not happen" }.assertLeft()::class
-            )
-        }
+        val error = FeatherEntity.updateByIdOrError(0L) { type = "down" }.assertLeft()
+        assertEquals(ConnectionError::class, error::class)
     }
 
     @Test
-    fun `should return a failure when there is no entities to update`() {
-        transaction {
-            assertEquals(
-                NotFoundError::class,
-                FeatherEntity.updateByIdOrError(0L) { type = "error" }.assertLeft()::class
-            )
-        }
+    fun `should return a failure when the entity does not exist`() {
+        val error = FeatherEntity.updateByIdOrError(0L) { type = "down" }.assertLeft()
+        assertEquals(NotFoundError::class, error::class)
     }
 }
