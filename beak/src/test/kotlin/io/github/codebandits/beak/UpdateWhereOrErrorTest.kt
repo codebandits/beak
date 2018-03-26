@@ -44,7 +44,7 @@ abstract class UpdateWhereOrErrorTest : TestWithDatabase() {
         transaction {
             assertEquals(
                 2,
-                FeatherEntity.findOrError({ FeatherTable.type eq "contour-updated" }).assertRight().count()
+                FeatherEntity.findWhereOrError({ FeatherTable.type eq "contour-updated" }).assertRight().count()
             )
         }
     }

@@ -63,7 +63,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id:
  *
  * @return All the entities that conform to the [op] statement or a DataAccessError.
  */
-fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, List<T>> =
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findWhereOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, List<T>> =
     Try { transaction { find(op).toList() } }.mapFailureToDataAccessError()
 
 /**
@@ -106,7 +106,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateWhereOrError(
     op: SqlExpressionBuilder.() -> Op<Boolean>,
     update: T.() -> Unit
 ): Either<DataAccessError, Unit> =
-    findOrError(op)
+    findWhereOrError(op)
         .flatMap {
             if (it.isNotEmpty()) Either.right(it)
             else Either.left(NotFoundError(NoSuchElementException("Not found: no matching entities found in the database")))
