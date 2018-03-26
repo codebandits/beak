@@ -2,8 +2,7 @@ package io.github.codebandits.beak
 
 import io.github.codebandits.beak.DataAccessError.QueryError.NotFoundError
 import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
-import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -27,49 +26,30 @@ abstract class UpdateWhereOrErrorTest : TestWithDatabase() {
 
     @Test
     fun `should update multiple entities that returns from query from the table`() {
-        transaction {
-            FeatherEntity.newOrError {
-                type = "contour"
-            }.assertRight()
+        FeatherEntity.newOrError { type = "down" }.assertRight()
+        FeatherEntity.newOrError { type = "contour" }.assertRight()
+        FeatherEntity.newOrError { type = "contour" }.assertRight()
 
-            FeatherEntity.newOrError {
-                type = "contour"
-            }.assertRight()
+        FeatherEntity.updateWhereOrError({ FeatherTable.type eq "contour" }) {
+            type = "filoplume"
+        }.assertRight()
 
-            FeatherEntity.updateWhereOrError({ FeatherTable.type eq "contour" }) {
-                type = "contour-updated"
-            }.assertRight()
-        }
+        assertEquals(2, FeatherEntity.countOrError(FeatherTable.type eq "filoplume").assertRight())
+    }
 
-        transaction {
-            assertEquals(
-                2,
-                FeatherEntity.findWhereOrError({ FeatherTable.type eq "contour-updated" }).assertRight().count()
-            )
-        }
+    @Test
+    fun `should return a failure when there are no entities to update`() {
+        val error = FeatherEntity.updateWhereOrError({ FeatherTable.type eq "contour" }) {
+            type = "down"
+        }.assertLeft()
+        assertEquals(NotFoundError::class, error::class)
     }
 
     @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
-        transaction {
-            val actualError: DataAccessError = FeatherEntity.updateWhereOrError({ FeatherTable.id eq 0L }) {
-                type = "should not happen"
-            }.assertLeft()
-
-            assertEquals(ConnectionError::class, actualError::class)
-        }
-    }
-
-    @Test
-    fun `should return a failure when there is no entities to update`() {
-        transaction {
-            val actualError = FeatherEntity.updateWhereOrError({ FeatherTable.type eq "contour" }) {
-                type = "empty"
-            }.assertLeft()
-
-            assertEquals(NotFoundError::class, actualError::class)
-        }
+        val error = FeatherEntity.updateWhereOrError({ FeatherTable.id eq 0L }) { type = "down" }.assertLeft()
+        assertEquals(ConnectionError::class, error::class)
     }
 }
