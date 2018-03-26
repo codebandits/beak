@@ -73,7 +73,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findWhereOrError(op
  *
  * @return The one entity that conforms to the [op] statement or a DataAccessError.
  */
-fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOneOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, T> =
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findOneWhereOrError(op: SqlExpressionBuilder.() -> Op<Boolean>): Either<DataAccessError, T> =
     Try { transaction { find(op).single() } }.mapFailureToDataAccessError()
 
 /**
