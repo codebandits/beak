@@ -8,7 +8,7 @@ import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
-import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
  * Get all the entities.
@@ -26,7 +26,18 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.allOrError(): Eithe
  * @return The entity that has been created or a DataAccessError.
  */
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.newOrError(init: T.() -> Unit): Either<DataAccessError, T> =
-    Try { new(init).also { TransactionManager.current().commit() } }.mapFailureToDataAccessError()
+    Try { transaction { new(init) } }.mapFailureToDataAccessError()
+
+/**
+ * Count the amount of entities that conform to the [op] statement.
+ *
+ * @param op The statement to count the entities for. The statement must be of boolean type.
+ *
+ * @return The amount of entities that conform to the [op] statement.
+ */
+fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.countOrError(op: Op<Boolean>? = null): Either<DataAccessError, Int> {
+    return Try { transaction { count(op) } }.mapFailureToDataAccessError()
+}
 
 /**
  * Get an entity by its [id].
