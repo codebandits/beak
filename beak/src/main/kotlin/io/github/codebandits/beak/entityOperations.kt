@@ -49,12 +49,7 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.countOrError(op: Op
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.findByIdOrError(id: ID): Either<DataAccessError, T> =
     Try { transaction { findById(id) } }
         .mapFailureToDataAccessError()
-        .flatMap {
-            when (it) {
-                null -> Either.left(NotFoundError(NoSuchElementException("Not found: the value returned from database was null")))
-                else -> Either.right(it)
-            }
-        }
+        .notNull()
 
 /**
  * Get all the entities that conform to the [op] statement.
@@ -91,10 +86,11 @@ fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.deleteByIdOrError(i
 fun <ID : Comparable<ID>, T : Entity<ID>> EntityClass<ID, T>.updateByIdOrError(
     id: ID,
     update: T.() -> Unit
-): Either<DataAccessError, Unit> =
-    findByIdOrError(id)
-        .flatMap { Try { transaction { it.apply(update) } }.mapFailureToDataAccessError() }
-        .map { Unit }
+): Either<DataAccessError, T> {
+    return Try { transaction { findById(id)?.apply(update) } }
+        .mapFailureToDataAccessError()
+        .notNull()
+}
 
 /**
  * Update the entities that match a selection.

@@ -1,8 +1,8 @@
 package io.github.codebandits.beak
 
+import io.github.codebandits.beak.DataAccessError.QueryError.BadRequestError
 import io.github.codebandits.beak.DataAccessError.QueryError.NotFoundError
 import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -27,9 +27,9 @@ abstract class UpdateByIdOrErrorTest : TestWithDatabase() {
     @Test
     fun `should update an entity from the table`() {
         val featherId = FeatherEntity.newOrError { type = "contour" }.assertRight().id.value
-        FeatherEntity.updateByIdOrError(featherId) { type = "contour-updated" }.assertRight()
+        FeatherEntity.updateByIdOrError(featherId) { type = "down" }.assertRight()
 
-        assertEquals("contour-updated", FeatherEntity.findByIdOrError(featherId).assertRight().type)
+        assertEquals("down", FeatherEntity.findByIdOrError(featherId).assertRight().type)
     }
 
     @Test
@@ -44,5 +44,12 @@ abstract class UpdateByIdOrErrorTest : TestWithDatabase() {
     fun `should return a failure when the entity does not exist`() {
         val error = FeatherEntity.updateByIdOrError(0L) { type = "down" }.assertLeft()
         assertEquals(NotFoundError::class, error::class)
+    }
+
+    @Test
+    fun `should return a failure when the data is invalid`() {
+        val featherId = FeatherEntity.newOrError { type = "contour" }.assertRight().id.value
+        val error = FeatherEntity.updateByIdOrError(featherId) { type = "x".repeat(500) }.assertLeft()
+        assertEquals(BadRequestError::class, error::class)
     }
 }

@@ -1,10 +1,19 @@
 package io.github.codebandits.beak
 
 import arrow.core.Either
+import arrow.core.flatMap
 import arrow.data.Try
 import io.github.codebandits.beak.DataAccessError.QueryError.*
 import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
 import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
+
+internal fun <T> Either<DataAccessError, T?>.notNull(): Either<DataAccessError, T> =
+    flatMap {
+        when (it) {
+            null -> Either.left(NotFoundError(NoSuchElementException("Not found: the value returned from database was null")))
+            else -> Either.right(it)
+        }
+    }
 
 internal fun <T> Try<T>.mapFailureToDataAccessError(): Either<DataAccessError, T> =
     toEither()
@@ -13,6 +22,7 @@ internal fun <T> Try<T>.mapFailureToDataAccessError(): Either<DataAccessError, T
                 .handleGenericThrowables()
                 .handleMysqlThrowables()
                 .handleH2Throwables()
+                .handlePostgresqlThrowables()
                 .fold({ throw UnexpectedException(it) }, { it })
         }
 
@@ -20,6 +30,7 @@ private fun Either<Throwable, DataAccessError>.handleMysqlThrowables() = maybeHa
     when {
         classIsPresent("com.mysql.cj.jdbc.Driver") -> when (throwable) {
             is com.mysql.cj.jdbc.exceptions.CommunicationsException -> Either.right(ConnectionError(throwable))
+            is com.mysql.cj.jdbc.exceptions.MysqlDataTruncation     -> Either.right(BadRequestError(throwable))
             else                                                    -> this
         }
         else                                       -> this
@@ -30,9 +41,20 @@ private fun Either<Throwable, DataAccessError>.handleH2Throwables() = maybeHandl
     when {
         classIsPresent("org.h2.Driver") -> when {
             throwable.cause is java.net.ConnectException -> Either.right(ConnectionError(throwable))
+            throwable is org.h2.jdbc.JdbcSQLException    -> Either.right(BadRequestError(throwable))
             else                                         -> this
         }
         else                            -> this
+    }
+}
+
+private fun Either<Throwable, DataAccessError>.handlePostgresqlThrowables() = maybeHandleThrowable { throwable ->
+    when {
+        classIsPresent("org.postgresql.Driver") -> when (throwable) {
+            is org.postgresql.util.PSQLException -> Either.right(BadRequestError(throwable))
+            else                                 -> this
+        }
+        else                                    -> this
     }
 }
 

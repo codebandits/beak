@@ -13,16 +13,32 @@ dependencies {
     compile("io.arrow-kt:arrow-core:$arrowVersion")
     compile("io.arrow-kt:arrow-data:$arrowVersion")
     compile("org.jetbrains.exposed:exposed:$exposedVersion")
-    compileOnly("mysql:mysql-connector-java:$mysqlVersion")
+
+    compileOnly("com.h2database:h2:$h2Version") {
+        because("we require the classes to interpret DB-specific errors")
+    }
+    compileOnly("mysql:mysql-connector-java:$mysqlVersion") {
+        because("we require the classes to interpret DB-specific errors")
+    }
+    compileOnly("org.postgresql:postgresql:$postgresqlVersion") {
+        because("we require the classes to interpret DB-specific errors")
+    }
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testCompile(kotlin(module = "test-junit", version = kotlinVersion))
-    testCompile("com.h2database:h2:$h2Version")
-    testCompile("mysql:mysql-connector-java:$mysqlVersion")
-    testCompile("org.postgresql:postgresql:$postgresqlVersion")
     testCompile("com.github.netcrusherorg:netcrusher-core:$netCrusherVersion")
     testCompile("org.apache.httpcomponents:httpclient:$httpclientVersion")
+
+    testCompile("com.h2database:h2:$h2Version") {
+        because("we require the driver to run the tests")
+    }
+    testCompile("mysql:mysql-connector-java:$mysqlVersion") {
+        because("we require the driver to run the tests")
+    }
+    testCompile("org.postgresql:postgresql:$postgresqlVersion") {
+        because("we require the driver to run the tests")
+    }
 }
 
 publishing {
