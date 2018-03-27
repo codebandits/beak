@@ -33,8 +33,11 @@ Here is a simple example comparing Exposed's `.new {}` with Beak's `.newOrError 
 
 ```kotlin
 import arrow.core.Either
+import arrow.core.flatMap
 import io.github.codebandits.beak.DataAccessError
+import io.github.codebandits.beak.beakTransaction
 import io.github.codebandits.beak.newOrError
+import io.github.codebandits.beak.updateByIdOrError
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
@@ -55,22 +58,36 @@ class FeatherEntity(id: EntityID<Long>) : LongEntity(id) {
 }
 
 fun main(args: Array<String>) {
-    Database.connect("jdbc:h2:mem:test", driver = "org.h2.Driver")
+    Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver")
 
-    transaction {
-        create(FeatherTable)
+    transaction { create(FeatherTable) }
 
-        // Create a new Feather using Exposed's API.
-        // This will throw exceptions when errors are encountered.
-        val feather: FeatherEntity = FeatherEntity.new {
+    // Create a new Feather using Exposed's API.
+    // This will throw exceptions when errors are encountered.
+    val feather1: FeatherEntity = transaction {
+        FeatherEntity.new {
             type = "contour"
         }
+    }
 
-        // Create a new Feather using Beak's API.
-        // This will return a DataAccessError when errors are encountered.
-        val featherResult: Either<DataAccessError, FeatherEntity> = FeatherEntity.newOrError {
-            type = "down"
-        }
+    // Create a new Feather using Beak's API.
+    // This will return a DataAccessError when errors are encountered.
+    val feather2Result: Either<DataAccessError, FeatherEntity> = FeatherEntity.newOrError {
+        type = "down"
+    }
+
+    // Combine multiple operations in one transaction to link rollbacks for all the data access operations.
+    // When the second operations fails the first operation will also be rolled back, returning a DataAccessError.
+    val feather3Result: Either<DataAccessError, FeatherEntity> = beakTransaction {
+        FeatherEntity.newOrError { type = "down" }
+            .flatMap { featherEntity ->
+                FeatherEntity.updateByIdOrError(featherEntity.id.value) { type = "x".repeat(500) }
+            }
+    }
+
+    when (feather3Result) {
+        is Either.Right -> println("operation succeeded: ${feather3Result.b}")
+        is Either.Left -> println("operation failed: ${feather3Result.a}") // This one prints
     }
 }
 ```
