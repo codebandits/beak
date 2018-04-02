@@ -7,10 +7,12 @@ import org.jetbrains.exposed.dao.LongIdTable
 
 object FeatherTable : LongIdTable("feathers") {
     val type = varchar("type", 255).nullable()
+    val bird = reference("bird_id", BirdTable).nullable()
 }
 
 class FeatherEntity(id: EntityID<Long>) : LongEntity(id) {
     companion object : LongEntityClass<FeatherEntity>(FeatherTable)
 
     var type by FeatherTable.type
+    var bird by FeatherTable.bird
 }

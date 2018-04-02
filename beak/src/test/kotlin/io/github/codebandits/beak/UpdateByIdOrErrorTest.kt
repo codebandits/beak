@@ -33,14 +33,6 @@ abstract class UpdateByIdOrErrorTest : TestWithDatabase() {
     }
 
     @Test
-    fun `should return a failure when the database cannot connect`() {
-        databaseConfiguration.interruptDatabase()
-
-        val error = FeatherEntity.updateByIdOrError(0L) { type = "down" }.assertLeft()
-        assertEquals(ConnectionError::class, error::class)
-    }
-
-    @Test
     fun `should return a failure when the entity does not exist`() {
         val error = FeatherEntity.updateByIdOrError(0L) { type = "down" }.assertLeft()
         assertEquals(NotFoundError::class, error::class)
@@ -51,5 +43,36 @@ abstract class UpdateByIdOrErrorTest : TestWithDatabase() {
         val featherId = FeatherEntity.newOrError { type = "contour" }.assertRight().id.value
         val error = FeatherEntity.updateByIdOrError(featherId) { type = "x".repeat(500) }.assertLeft()
         assertEquals(BadRequestError::class, error::class)
+    }
+
+    @Test
+    fun `should be able to access referrers`() {
+        val bird = BirdEntity.newOrError { name = "Steve" }.assertRight()
+
+        FeatherEntity.newOrError {
+            type = "down"
+            this.bird = bird.id
+        }.assertRight()
+
+        FeatherEntity.newOrError {
+            type = "filoplume"
+            this.bird = bird.id
+        }.assertRight()
+
+        assertEquals(
+            listOf("down", "filoplume"),
+            BirdEntity.updateByIdOrError(bird.id.value) { name = "Bald Eagle" }
+                .assertRight()
+                .feathers
+                .map { it.type }
+        )
+    }
+
+    @Test
+    fun `should return a failure when the database cannot connect`() {
+        databaseConfiguration.interruptDatabase()
+
+        val error = FeatherEntity.updateByIdOrError(0L) { type = "down" }.assertLeft()
+        assertEquals(ConnectionError::class, error::class)
     }
 }

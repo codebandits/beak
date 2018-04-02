@@ -37,16 +37,16 @@ abstract class NewOrErrorTest : TestWithDatabase() {
     }
 
     @Test
+    fun `should return a failure when the data is invalid`() {
+        val error = FeatherEntity.newOrError { type = "x".repeat(500) }.assertLeft()
+        assertEquals(BadRequestError::class, error::class)
+    }
+
+    @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
         val error = FeatherEntity.newOrError {}.assertLeft()
         assertEquals(ConnectionError::class, error::class)
-    }
-
-    @Test
-    fun `should return a failure when the data is invalid`() {
-        val error = FeatherEntity.newOrError { type = "x".repeat(500) }.assertLeft()
-        assertEquals(BadRequestError::class, error::class)
     }
 }

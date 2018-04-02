@@ -30,18 +30,41 @@ abstract class FindByIdOrErrorTest : TestWithDatabase() {
     }
 
     @Test
-    fun `should return a failure when the database cannot connect`() {
-        databaseConfiguration.interruptDatabase()
-
-        val error = FeatherEntity.findByIdOrError(0L).assertLeft()
-        assertEquals(ConnectionError::class, error::class)
-    }
-
-    @Test
     fun `should return not found error when entity does not exist`() {
         val error = FeatherEntity.findByIdOrError(0L).assertLeft()
 
         assertEquals(NotFoundError::class, error::class)
         assertEquals(NoSuchElementException::class, error.cause::class)
+    }
+
+    @Test
+    fun `should be able to access referrers`() {
+        val bird = BirdEntity.newOrError { name = "Steve" }.assertRight()
+
+        FeatherEntity.newOrError {
+            type = "down"
+            this.bird = bird.id
+        }.assertRight()
+
+        FeatherEntity.newOrError {
+            type = "filoplume"
+            this.bird = bird.id
+        }.assertRight()
+
+        assertEquals(
+            listOf("down", "filoplume"),
+            BirdEntity.findByIdOrError(bird.id.value)
+                .assertRight()
+                .feathers
+                .map { it.type }
+        )
+    }
+
+    @Test
+    fun `should return a failure when the database cannot connect`() {
+        databaseConfiguration.interruptDatabase()
+
+        val error = FeatherEntity.findByIdOrError(0L).assertLeft()
+        assertEquals(ConnectionError::class, error::class)
     }
 }

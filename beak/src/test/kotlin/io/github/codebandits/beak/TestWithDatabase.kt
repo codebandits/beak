@@ -44,7 +44,7 @@ abstract class TestWithDatabase {
                     driver = "org.h2.Driver"
                 )
                 transaction {
-                    SchemaUtils.create(FeatherTable)
+                    SchemaUtils.create(BirdTable, FeatherTable)
                 }
             },
             interruptDatabase = {
@@ -52,7 +52,7 @@ abstract class TestWithDatabase {
             },
             tearDown = {
                 if (!server.isRunning(false)) server.start()
-                transaction { SchemaUtils.drop(FeatherTable) }
+                transaction { SchemaUtils.drop(BirdTable, FeatherTable) }
                 server.stop()
             }
         )
@@ -91,7 +91,7 @@ abstract class TestWithDatabase {
                 Database.connect(url = "jdbc:$proxyHostUri", driver = "com.mysql.cj.jdbc.Driver")
 
                 transaction {
-                    SchemaUtils.create(FeatherTable)
+                    SchemaUtils.create(BirdTable, FeatherTable)
                 }
             },
             interruptDatabase = {
@@ -99,7 +99,7 @@ abstract class TestWithDatabase {
             },
             tearDown = {
                 if (!proxy.isOpen) proxy.open()
-                transaction { SchemaUtils.drop(FeatherTable) }
+                transaction { SchemaUtils.drop(BirdTable, FeatherTable) }
                 proxy.close()
             }
         )
@@ -141,7 +141,7 @@ abstract class TestWithDatabase {
                 Database.connect(url = "jdbc:$proxyHostUri", driver = "org.postgresql.Driver")
 
                 transaction {
-                    SchemaUtils.create(FeatherTable)
+                    SchemaUtils.create(BirdTable, FeatherTable)
                 }
             },
             interruptDatabase = {
@@ -149,7 +149,7 @@ abstract class TestWithDatabase {
             },
             tearDown = {
                 if (!proxy.isOpen) proxy.open()
-                transaction { SchemaUtils.drop(FeatherTable) }
+                transaction { SchemaUtils.drop(BirdTable, FeatherTable) }
                 proxy.close()
             }
         )

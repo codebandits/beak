@@ -44,6 +44,30 @@ abstract class AllOrErrorTest : TestWithDatabase() {
     }
 
     @Test
+    fun `should be able to access referrers`() {
+        val bird = BirdEntity.newOrError { name = "Steve" }.assertRight()
+
+        FeatherEntity.newOrError {
+            type = "down"
+            this.bird = bird.id
+        }.assertRight()
+
+        FeatherEntity.newOrError {
+            type = "filoplume"
+            this.bird = bird.id
+        }.assertRight()
+
+        assertEquals(
+            listOf("down", "filoplume"),
+            BirdEntity.allOrError()
+                .assertRight()
+                .map { it.feathers }
+                .flatten()
+                .map { it.type }
+        )
+    }
+
+    @Test
     fun `should return a failure when the database cannot connect`() {
         databaseConfiguration.interruptDatabase()
 
