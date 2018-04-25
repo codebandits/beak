@@ -1,5 +1,4 @@
 dependencies {
-    val kotlinVersion: String by extra
     val h2Version: String by extra
     val mysqlVersion: String by extra
     val postgresqlVersion: String by extra
@@ -9,10 +8,17 @@ dependencies {
     val junitVersion: String by extra
     val httpclientVersion: String by extra
 
-    compile(kotlin(module = "stdlib", version = kotlinVersion))
-    compile("io.arrow-kt:arrow-core:$arrowVersion")
-    compile("io.arrow-kt:arrow-data:$arrowVersion")
-    compile("org.jetbrains.exposed:exposed:$exposedVersion")
+    compile(kotlin("stdlib"))
+    compile(kotlin("reflect"))
+    compile("io.arrow-kt:arrow-core:$arrowVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    compile("io.arrow-kt:arrow-data:$arrowVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    compile("org.jetbrains.exposed:exposed:$exposedVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
 
     compileOnly("com.h2database:h2:$h2Version") {
         because("we require the classes to interpret DB-specific errors")
@@ -26,7 +32,7 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testCompile(kotlin(module = "test-junit", version = kotlinVersion))
+    testCompile(kotlin("test-junit"))
     testCompile("com.github.netcrusherorg:netcrusher-core:$netCrusherVersion")
     testCompile("org.apache.httpcomponents:httpclient:$httpclientVersion")
 
