@@ -1,7 +1,7 @@
 package io.github.codebandits.beak
 
 import arrow.core.Either
-import arrow.data.Try
+import arrow.core.Try
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
 

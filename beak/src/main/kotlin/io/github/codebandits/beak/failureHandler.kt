@@ -1,8 +1,8 @@
 package io.github.codebandits.beak
 
 import arrow.core.Either
+import arrow.core.Try
 import arrow.core.flatMap
-import arrow.data.Try
 import io.github.codebandits.beak.DataAccessError.QueryError.*
 import io.github.codebandits.beak.DataAccessError.SystemError.ConnectionError
 import io.github.codebandits.beak.DataAccessError.SystemError.TransactionError
