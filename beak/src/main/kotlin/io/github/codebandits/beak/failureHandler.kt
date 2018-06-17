@@ -28,7 +28,7 @@ internal fun <T> Try<T>.mapFailureToDataAccessError(): Either<DataAccessError, T
 
 private fun Either<Throwable, DataAccessError>.handleMysqlThrowables() = maybeHandleThrowable { throwable ->
     when {
-        classIsPresent("com.mysql.cj.jdbc.Driver") -> when (throwable) {
+        classIsPresent("com.mysql.cj.jdbc.Driver") -> when (throwable.cause) {
             is com.mysql.cj.jdbc.exceptions.CommunicationsException -> Either.right(ConnectionError(throwable))
             is com.mysql.cj.jdbc.exceptions.MysqlDataTruncation     -> Either.right(BadRequestError(throwable))
             else                                                    -> this
@@ -39,10 +39,9 @@ private fun Either<Throwable, DataAccessError>.handleMysqlThrowables() = maybeHa
 
 private fun Either<Throwable, DataAccessError>.handleH2Throwables() = maybeHandleThrowable { throwable ->
     when {
-        classIsPresent("org.h2.Driver") -> when {
-            throwable.cause is java.net.ConnectException -> Either.right(ConnectionError(throwable))
-            throwable is org.h2.jdbc.JdbcSQLException    -> Either.right(BadRequestError(throwable))
-            else                                         -> this
+        classIsPresent("org.h2.Driver") -> when (throwable.cause) {
+            is org.h2.jdbc.JdbcSQLException -> Either.right(BadRequestError(throwable))
+            else                            -> this
         }
         else                            -> this
     }
@@ -50,7 +49,7 @@ private fun Either<Throwable, DataAccessError>.handleH2Throwables() = maybeHandl
 
 private fun Either<Throwable, DataAccessError>.handlePostgresqlThrowables() = maybeHandleThrowable { throwable ->
     when {
-        classIsPresent("org.postgresql.Driver") -> when (throwable) {
+        classIsPresent("org.postgresql.Driver") -> when (throwable.cause) {
             is org.postgresql.util.PSQLException -> Either.right(BadRequestError(throwable))
             else                                 -> this
         }
@@ -60,17 +59,24 @@ private fun Either<Throwable, DataAccessError>.handlePostgresqlThrowables() = ma
 
 private fun Either<Throwable, DataAccessError>.handleGenericThrowables() = maybeHandleThrowable { throwable ->
     when (throwable) {
-        is java.util.NoSuchElementException   -> Either.right(NotFoundError(throwable))
-        is java.sql.BatchUpdateException      -> Either.right(BadRequestError(throwable))
-        is java.lang.IllegalArgumentException -> when {
+        is java.util.NoSuchElementException                     -> Either.right(NotFoundError(throwable))
+        is java.lang.IllegalArgumentException                   -> when {
             throwable.message == "Collection has more than one element." -> Either.right(MultipleFoundError(throwable))
             else                                                         -> this
         }
-        is java.lang.IllegalStateException    -> when {
+        is java.lang.IllegalStateException                      -> when {
             throwable.message == "No transaction in context." -> Either.right(TransactionError(throwable))
             else                                              -> this
         }
-        else                                  -> this
+
+        is org.jetbrains.exposed.exceptions.ExposedSQLException -> {
+            when {
+                throwable.cause is java.sql.BatchUpdateException    -> Either.right(BadRequestError(throwable))
+                throwable.cause?.cause is java.net.ConnectException -> Either.right(ConnectionError(throwable))
+                else                                                -> this
+            }
+        }
+        else                                                    -> this
     }
 }
 

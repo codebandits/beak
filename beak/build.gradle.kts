@@ -50,7 +50,7 @@ dependencies {
 publishing {
     val sourceJar = task("sourceJar", type = Jar::class) {
         classifier = "sources"
-        from(the<JavaPluginConvention>().sourceSets.getByName("main").allSource)
+        from(java.sourceSets.getByName("main").allSource)
     }
 
     publications.create<MavenPublication>(name) {
