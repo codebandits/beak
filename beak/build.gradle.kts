@@ -102,3 +102,8 @@ tasks {
         }
     }
 }
+
+dokka {
+    outputFormat = "markdown"
+    outputDirectory = "$projectDir/../website/docs/"
+}
